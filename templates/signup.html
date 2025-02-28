@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="container" class="container">
+    
+        <!-- Signup Form -->
+        <div class="row">
+            <div class="col align-items-center flex-col sign-up">
+                <div class="flash-message-container">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="message {{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="form-wrapper align-items-center">
+                    <div class="form sign-up">
+                        <form action="/signup" method="POST" enctype="multipart/form-data">
+                            <div class="input-group">
+                                <i class='bx bxs-user'></i>
+                                <input type="text" id="name" name="name" placeholder="Name" required>
+                            </div>
+                            <div class="input-group">
+                                <i class='bx bxs-user'></i>
+                                <input type="text" id="signup-username" name="username" placeholder="Username" required>
+                            </div>
+                            <div class="input-group">
+                                <i class='bx bx-mail-send'></i>
+                                <input type="email" id="signup-email" name="email" placeholder="Email" required>
+                            </div>
+                            <div class="input-group">
+                                <i class='bx bxs-lock-alt'></i>
+                                <input type="password" id="password" name="password" placeholder="Password" required>
+                            </div>
+                            <div class="input-group">
+                                <i class='bx bxs-lock-alt'></i>
+                                <input type="password" id="confirm-password" name="confirm_password" placeholder="Confirm password" required>
+                            </div>
+                            <div class="input-group">
+                                <i class='bx bxs-camera'></i>
+                                <input type="file" id="image" name="image" accept="image/*" required>
+                            </div>
+                            <button type="submit">Sign up</button>
+                            <p>
+                                <span>Already have an account?</span>
+                                <a href="{{ url_for('login') }}" class="pointer">Login</a>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Join text -->
+    <div class="join-text sign-up">Join with us !</div>
+
+    <script>
+        let container = document.getElementById('container');
+
+        setTimeout(() => {
+            container.classList.add('sign-up');
+        }, 200);
+    </script>
+</body>
+</html>

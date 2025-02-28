@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart AI Exam Proctoring</title>
+    <style>
+        /* Remove horizontal scrollbar and ensure vertical scrolling */
+        html, body {
+            overflow-x: hidden; /* Hide horizontal scrollbar */
+            overflow-y: auto; /* Allow vertical scrolling */
+            margin: 0; /* Remove default margin */
+            padding: 0; /* Remove default padding */
+        }
+
+        /* CSS for the landing page */
+        @keyframes zoomIn {
+            0% { background-size: 100%; }
+            100% { background-size: 120%; }
+        }
+
+        body {
+            background: #0a1e30;
+            background-image: url('https://blog.talview.com/hubfs/Remote%20Exams.jpg');
+            background-size: cover;
+            background-position: relative;
+            background-blend-mode: overlay, hard-light;
+            display: fixed;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            color: white;
+            text-align: center;
+            position: relative;
+            animation: zoomIn 20s ease-in-out infinite;
+            
+        }
+
+        .container {
+            display: fixed;
+            justify-content: space-between;
+            align-items: center;
+            width: 90%;
+            max-width: 1200px;
+            padding: -600px;
+            box-sizing: border-box;
+        }
+
+        .left-side {
+            max-width: 50%;
+            text-align: left;
+            padding: 150px;
+            margin-left: -100px;
+            margin-top: -100px;
+        }
+
+        .left-side h1, .left-side h2 {
+            font-size: 80px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+            margin: 0;
+            line-height: 1.2;
+            white-space: nowrap;
+            transform: translateY(100px);
+            animation: slideInFromBelow 1s ease-out forwards;
+        }
+
+        @keyframes slideInFromBelow {
+            0% { transform: translateY(100px); }
+            100% { transform: translateY(0); }
+        }
+
+        .left-side h3 {
+            font-size: 30px;
+            font-weight: normal;
+            margin-top: 13px;
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            white-space: nowrap;
+        }
+
+        .right-side {
+            position: relative;
+            max-width: 45%;
+            overflow: hidden;
+        }
+
+        .right-side img {
+            position: absolute;
+            bottom: -40px;
+            right: -40px;
+            width: 750px;
+            height: auto;
+            animation: pop-out 3s ease-out infinite, rotate-in 4s ease-in-out infinite;
+            transform: scale(1);
+            transition: transform 0.5s ease;
+        }
+
+        .right-side img:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes pop-out {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes rotate-in {
+            0% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .neon-btn {
+            background: #e03189;
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(255, 0, 153, 0.6);
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .neon-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #8c1db7, #d932a7, #45aaec);
+            animation: neon-glow 1.5s infinite ease-in-out;
+            z-index: -1;
+        }
+
+        .neon-btn:hover {
+            background: #00a2ff;
+            box-shadow: 0 0 20px 5px rgba(10, 143, 191, 0.8);
+            transform: scale(1.05);
+        }
+
+        @keyframes neon-glow {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        /* New CSS for About Section */
+        .about-section {
+            background: rgba(10, 30, 46, 0.9); /* Semi-transparent dark background */
+            padding: 40px 20px;
+            margin-top: 50px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 1200px;
+            text-align: left;
+            opacity: 0; /* Initially hidden */
+            visibility: hidden; /* Initially hidden */
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .about-section.visible {
+            opacity: 1; /* Visible when scrolled */
+            visibility: visible; /* Visible when scrolled */
+        }
+
+        .about-section h2 {
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .about-section h3 {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .about-section ul {
+            list-style-type: disc;
+            padding-left: 40px;
+            margin-bottom: 20px;
+        }
+
+        .about-section ul li {
+            font-size: 16px;
+            line-height: 1.6;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .team-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .team-member {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 200px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .team-member h4 {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .team-member p {
+            font-size: 14px;
+            color: white;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-side">
+            <h1>CheatGaurdX </h1>
+            <h2>Exam Proctoring</h2>
+            <h3>Ensuring Fairness & Integrity in Online Exams</h3>
+            <button class="neon-btn" onclick="window.location.href='/login'">Login / Signup</button>
+
+            <!-- About Section -->
+            <div class="about-section" id="aboutSection">
+                <h2>About Smart AI Exam Proctoring</h2>
+                <h3>Features</h3>
+                <ul>
+                    <li>Real-time AI monitoring of exam sessions.</li>
+                    <li>Detection of suspicious activities like screen sharing or unauthorized devices.</li>
+                    <li>Automated flagging of rule violations.</li>
+                    <li>Secure and tamper-proof exam environment.</li>
+                    <li>Detailed reports for instructors and administrators.</li>
+                </ul>
+                <h3>Our Team</h3>
+                <div class="team-container">
+                    <div class="team-member">
+                        <h4>Geethika Deepthi</h4>
+                        <p>Software Architect, Integration, and Team Lead</p>
+                    </div>
+                    <div class="team-member">
+                        <h4>Rupa Sri</h4>
+                        <p>AI/DL Engineer</p>
+                    </div>
+                    <div class="team-member">
+                        <h4>Satya</h4>
+                        <p>Quality Analyst</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="right-side">
+            <img src="https://blog.talview.com/hubfs/Remote%20Exams.jpg" alt="Remote Exams">
+        </div>
+    </div>
+
+    <form method="POST">
+        <input type="hidden" name="action" value="signup">
+        <!-- Signup Fields -->
+    </form>
+    
+    <form method="POST">
+        <input type="hidden" name="action" value="login">
+        <!-- Login Fields -->
+    </form>
+
+    <script>
+        // JavaScript to reveal the About Section on scroll
+        const aboutSection = document.getElementById('aboutSection');
+        let lastScrollPosition = 0;
+
+        window.addEventListener('scroll', () => {
+            const scrollPosition = window.scrollY || window.pageYOffset;
+
+            // Show About Section when scrolling down
+            if (scrollPosition > lastScrollPosition) {
+                aboutSection.classList.add('visible');
+            }
+            // Hide About Section when scrolling up
+            else {
+                aboutSection.classList.remove('visible');
+            }
+
+            lastScrollPosition = scrollPosition;
+        });
+
+        function redirectToLogin() {
+            window.location.href = "glogin.html";
+        }
+    </script>
+</body>
+</html>

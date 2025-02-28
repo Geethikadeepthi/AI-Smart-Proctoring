@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Session</title>
+    <style>
+        /* Your existing styles */
+        body {
+            background-color: rgb(3, 3, 52);
+            color: rgb(14, 13, 13);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .system-check {
+            padding: 20px;
+            border: 2px solid #60cde0;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 50px auto;
+            background: #b8c2f5;
+            color: #07000b;
+        }
+
+        .check-item {
+            margin: 15px 0;
+            padding: 10px;
+            background: #919ff9;
+            border-radius: 5px;
+        }
+
+        #examContainer {
+            display: none;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #edeaed;
+            color: #631d70;
+            border-radius: 10px;
+            overflow-y: auto; /* Enable vertical scrolling */
+            height: calc(100vh - 100px); /* Adjust height for scrolling */
+        }
+
+        .webcam-feed {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            border: 2px solid #e03189;
+            border-radius: 10px;
+            background: black;
+        }
+
+        .webcam-feed video {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        #timer {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #e03189;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        #warningMessage {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 0, 0, 0.9);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 5px;
+            display: none;
+            font-size: 16px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+        }
+
+        .question {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .question h3 {
+            color: #440860;
+        }
+
+        .question label {
+            display: block;
+            margin: 10px 0;
+        }
+
+        #thankYouScreen {
+            display: none;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+        }
+
+        #thankYouScreen h2 {
+            color: #e03189;
+            font-size: 32px;
+        }
+
+        #thankYouScreen p {
+            font-size: 18px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #0f043f;
+            color: white;
+            border: 2px solid #025a90;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0cb1de;
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        #returnToDashboardBtn {
+            background-color: #440860;
+        }
+
+        #returnToDashboardBtn:hover {
+            background-color: #dc138f;
+        }
+
+        #submitExamBtn {
+            float: right;
+            margin-top: 20px;
+        }
+
+        #fullscreenWarning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            text-align: center;
+            padding-top: 20%;
+            z-index: 9999;
+            font-size: 24px;
+        }
+
+        /* Kiosk mode styles */
+        body.kiosk-mode {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        #kiosk-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 9998;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <div id="kiosk-overlay"></div>
+    <div class="system-check" id="systemCheck">
+        <h2>System Compatibility Check</h2>
+        <div class="check-item">
+            <span>Camera: </span>
+            <span id="cameraStatus">Checking...</span>
+        </div>
+        <div class="check-item">
+            <span>Microphone: </span>
+            <span id="micStatus">Checking...</span>
+        </div>
+        <button onclick="startExam()" id="startExamBtn" disabled>Start Exam</button>
+    </div>
+
+    <div id="timer">30:00</div>
+    <div id="warningMessage">⚠️ Tab switching is not allowed!</div>
+    <div id="fullscreenWarning">Please return to fullscreen mode to continue your exam!</div>
+
+    <div id="examContainer">
+        <div class="webcam-feed">
+            <video id="webcamPreview" autoplay muted></video>
+        </div>
+        <div class="exam-questions" id="examContent"></div>
+    </div>
+
+    <div id="thankYouScreen">
+        <h2>Thank You!</h2>
+        <p>Your exam has been submitted successfully.</p>
+        <p id="scoreMessage"></p>
+        <button id="returnToDashboardBtn" onclick="window.location.href='/dashboard'">Return to Dashboard</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+    <script>
+        // Connect to the WebSocket server
+        const socket = io();
+
+        // Handle proctoring alerts
+        socket.on('proctoring_alert', (data) => {
+            const { message, face_count, suspicious_objects } = data;
+            showWarning(message);
+            console.log(`Faces detected: ${face_count}`);
+            console.log(`Suspicious objects: ${suspicious_objects.join(', ')}`);
+        });
+
+        // Handle exam termination
+        socket.on('exam_terminated', (data) => {
+            const { message } = data;
+            endExam(message);
+        });
+        let timeLeft = 30 * 60;
+        let timerInterval;
+        let warnings = 0;
+        const maxWarnings = 3;
+        let examActive = false;
+        let mediaStream = null;
+        let permissionsGranted = false;
+        const restrictedKeys = new Set(['Control', 'Alt', 'Meta', 'Tab', 'Escape']);
+        let fullscreenExitAttempts = 0;
+        let audioContext;
+        let analyser;
+        let microphone;
+        let scriptProcessor;
+        let lastWarningTime = 0;
+        const warningCooldown = 5000; // 5 seconds cooldown between warnings
+
+        async function requestMediaAccess() {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                document.getElementById('cameraStatus').textContent = '✅ Detected';
+                document.getElementById('micStatus').textContent = '✅ Detected';
+                document.getElementById('startExamBtn').disabled = false;
+                permissionsGranted = true;
+                const preview = document.getElementById('webcamPreview');
+                preview.srcObject = mediaStream;
+            } catch (error) {
+                document.getElementById('cameraStatus').textContent = '❌ Not found';
+                document.getElementById('micStatus').textContent = '❌ Not found';
+                permissionsGranted = false;
+                alert('Camera and microphone access is required. Please refresh and allow access.');
+            }
+        }
+
+        async function startExam() {
+            if (!permissionsGranted) {
+                alert('Camera and microphone access required. Please refresh and allow access.');
+                return;
+            }
+
+            try {
+                await enterKioskMode();
+                document.getElementById('systemCheck').style.display = 'none';
+                document.getElementById('examContainer').style.display = 'block';
+                document.getElementById('timer').style.display = 'block';
+                startTimer();
+                loadExamContent();
+                examActive = true;
+
+                // Initialize audio context and noise detection
+                initializeNoiseDetection();
+
+                fetch('/start_model')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data.message);
+                        startProctoringChecks();
+                    })
+                    .catch(error => console.error('Error starting model:', error));
+
+            } catch (error) {
+                console.error('fullscreen mode failed:', error);
+                alert('fullscreen mode is required to start the exam!');
+            }
+        }
+
+        function initializeNoiseDetection() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            microphone = audioContext.createMediaStreamSource(mediaStream);
+            scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
+
+            analyser.fftSize = 256;
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            microphone.connect(analyser);
+            analyser.connect(scriptProcessor);
+            scriptProcessor.connect(audioContext.destination);
+
+            scriptProcessor.onaudioprocess = () => {
+                analyser.getByteFrequencyData(dataArray);
+                const average = dataArray.reduce((acc, val) => acc + val, 0) / bufferLength;
+
+                // Threshold for noise detection (adjust as needed)
+                if (average > 70 && Date.now() - lastWarningTime > warningCooldown) {
+                    warnings++;
+                    lastWarningTime = Date.now();
+                    showWarning('⚠️ Excessive noise detected!');
+                    if (warnings >= maxWarnings) {
+                        endExam('Too many noise violations! Exam terminated.');
+                    }
+                }
+            };
+        }
+
+        async function enterKioskMode() {
+            document.body.classList.add('kiosk-mode');
+            document.getElementById('kiosk-overlay').style.display = 'block';
+            
+            try {
+                await document.documentElement.requestFullscreen();
+            } catch (e) {
+                console.warn('Fullscreen not supported:', e);
+            }
+            
+            document.addEventListener('fullscreenchange', handleKioskChanges);
+            document.addEventListener('webkitfullscreenchange', handleKioskChanges);
+            document.addEventListener('keydown', handleKioskInput);
+            document.addEventListener('contextmenu', preventContextMenu);
+            window.addEventListener('beforeunload', handleBeforeUnload);
+            
+            setTimeout(() => {
+                document.getElementById('kiosk-overlay').style.display = 'none';
+            }, 1000);
+        }
+
+        function handleKioskChanges() {
+            if (!document.fullscreenElement && examActive) {
+                document.documentElement.requestFullscreen().catch(() => {
+                    endExam('Tried to exit full screenmode! Exam terminated.');
+                });
+            }
+        }
+
+        function handleKioskInput(event) {
+            const blockedKeys = [
+                'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
+                'PrintScreen', 'ScrollLock', 'Pause', 'Escape', 'Tab', 'Meta', 'Alt', 'Control',
+                'ContextMenu', 'BrowserBack', 'BrowserForward', 'BrowserRefresh'
+            ];
+
+            if (blockedKeys.includes(event.key)) {
+                event.preventDefault();
+                warnings++;
+                showWarning(`⚠️ Restricted input detected: ${event.key}`);
+                if (warnings >= maxWarnings) endExam('Too many input violations!');
+                return;
+            }
+
+            if (event.ctrlKey || event.metaKey) {
+                event.preventDefault();
+                warnings++;
+                showWarning('⚠️ Keyboard shortcuts are disabled!');
+                if (warnings >= maxWarnings) endExam('Too many shortcut violations!');
+            }
+        }
+
+        function preventContextMenu(event) {
+            event.preventDefault();
+            warnings++;
+            showWarning('⚠️ Right-click is disabled!');
+            if (warnings >= maxWarnings) endExam('Too many context menu violations!');
+        }
+
+        function handleBeforeUnload(event) {
+            if (examActive) {
+                event.preventDefault();
+                event.returnValue = 'Are you sure you want to leave? This will terminate your session!';
+            }
+        }
+
+        function endExam(message) {
+            document.body.classList.remove('kiosk-mode');
+            document.removeEventListener('fullscreenchange', handleKioskChanges);
+            document.removeEventListener('webkitfullscreenchange', handleKioskChanges);
+            document.removeEventListener('keydown', handleKioskInput);
+            document.removeEventListener('contextmenu', preventContextMenu);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+
+            clearInterval(timerInterval);
+            examActive = false;
+            document.getElementById('timer').style.display = 'none';
+            const video = document.getElementById('webcamPreview');
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+            if (audioContext) {
+                audioContext.close();
+            }
+            saveExamData();
+            showThankYouScreen(message);
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                if (timeLeft <= 0) endExam('Time is up! Exam submitted.');
+            }, 1000);
+        }
+
+        function showWarning(message) {
+            const warning = document.getElementById('warningMessage');
+            warning.style.display = 'block';
+            warning.textContent = `${message} (${warnings}/${maxWarnings})`;
+            setTimeout(() => warning.style.display = 'none', 3000);
+        }
+
+        function loadExamContent() {
+            const examContent = document.getElementById('examContent');
+            const questions = [
+                {
+                    question: "What is the capital of France?",
+                    options: ["London", "Paris", "Berlin", "Madrid"],
+                    correct: 1
+                },
+                {
+                    question: "Which planet is closest to the Sun?",
+                    options: ["Venus", "Mars", "Mercury", "Earth"],
+                    correct: 2
+                },
+                {
+                    question: "What is the largest ocean on Earth?",
+                    options: ["Atlantic", "Indian", "Arctic", "Pacific"],
+                    correct: 3
+                },
+                {
+                    question: "Who wrote 'Romeo and Juliet'?",
+                    options: ["Charles Dickens", "William Shakespeare", "Mark Twain", "Jane Austen"],
+                    correct: 1
+                },
+                {
+                    question: "What is the chemical symbol for water?",
+                    options: ["H2O", "CO2", "O2", "H2"],
+                    correct: 0
+                },
+                {
+                    question: "Which country is known as the Land of the Rising Sun?",
+                    options: ["China", "Japan", "South Korea", "Thailand"],
+                    correct: 1
+                },
+                {
+                    question: "What is the largest mammal in the world?",
+                    options: ["Elephant", "Blue Whale", "Giraffe", "Shark"],
+                    correct: 1
+                },
+                {
+                    question: "What is the smallest prime number?",
+                    options: ["1", "2", "3", "5"],
+                    correct: 1
+                },
+                {
+                    question: "Which element has the atomic number 1?",
+                    options: ["Helium", "Hydrogen", "Oxygen", "Carbon"],
+                    correct: 1
+                },
+                {
+                    question: "What is the square root of 64?",
+                    options: ["6", "7", "8", "9"],
+                    correct: 2
+                }
+            ];
+
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.innerHTML = `
+                    <h3>Question ${index + 1}</h3>
+                    <p>${q.question}</p>
+                    ${q.options.map((opt, i) => `
+                        <label>
+                            <input type="radio" name="q${index}" value="${i}">
+                            ${opt}
+                        </label><br>
+                    `).join('')}
+                `;
+                examContent.appendChild(questionDiv);
+            });
+
+            const submitButton = document.createElement('button');
+            submitButton.textContent = 'Submit Exam';
+            submitButton.id = 'submitExamBtn';
+            submitButton.onclick = submitExam;
+            examContent.appendChild(submitButton);
+        }
+
+        function submitExam() {
+            if (confirm('Are you sure you want to submit?')) {
+                endExam('Exam submitted successfully!');
+            }
+        }
+
+        function saveExamData() {
+            const answers = [];
+            document.querySelectorAll('.question').forEach((q, index) => {
+                const selected = q.querySelector('input:checked');
+                answers.push({
+                    question: `Question ${index + 1}`,
+                    answer: selected ? selected.value : 'Not answered'
+                });
+            });
+            localStorage.setItem('examResults', JSON.stringify(answers));
+        }
+
+        function showThankYouScreen(message) {
+            document.getElementById('examContainer').style.display = 'none';
+            document.getElementById('thankYouScreen').style.display = 'block';
+            document.getElementById('scoreMessage').textContent = message;
+            const answers = JSON.parse(localStorage.getItem('examResults') || '[]');
+            const correctAnswers = answers.filter(answer => answer.answer !== 'Not answered').length;
+            document.getElementById('scoreMessage').textContent += ` You answered ${correctAnswers} out of 10 questions.`;
+        }
+
+        function startProctoringChecks() {
+            setInterval(async () => {
+                try {
+                    const response = await fetch('/proctoring_status');
+                    const data = await response.json();
+
+                    if (data.status === "terminated") {
+                        endExam(data.message);
+                    } else if (data.status === "warning") {
+                        warnings++;
+                        let violationMessage = "Suspicious activity detected: ";
+                        
+                        if (data.head_pose_alert) {
+                            violationMessage += "Look straight! ";
+                        }
+                        if (data.object_confidences.some(conf => conf > 0.7)) {
+                            violationMessage += "Prohibited object detected! ";
+                        }
+
+                        showWarning(violationMessage);
+                        if (warnings >= maxWarnings) {
+                            endExam('Multiple violations detected! Exam terminated.');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Proctoring check failed:', error);
+                }
+            }, 2000);
+        }
+
+        // Modified socket handlers
+        socket.on('proctoring_alert', (data) => {
+            const { message, violations } = data;
+            showWarning(message);
+            console.log(`Violations: ${violations.join(', ')}`);
+            
+            if (violations.includes('multiple faces detected')) {
+                endExam("Multiple faces detected! Exam terminated.");
+            }
+        });
+        requestMediaAccess();
+    </script>
+</body>
+</html>

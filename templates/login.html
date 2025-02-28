@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="container" class="container">
+        <!-- Message Container -->
+        
+
+        <!-- Login Form -->
+        <div class="row">
+            <div class="col align-items-center flex-col sign-in">
+                <div class="flash-message-container">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="message {{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="form-wrapper align-items-center">
+                    <div class="form sign-in">
+                        <form action="/login" method="POST">
+                            <div class="input-group">
+                                <i class='bx bxs-user'></i>
+                                <input type="text" id="login-username" name="username" placeholder="Username" required>
+                            </div>
+                            <div class="input-group">
+                                <i class='bx bxs-lock-alt'></i>
+                                <input type="password" id="login-password" name="password" placeholder="Password" required>
+                            </div>
+                            <button type="submit">Login</button>
+                            <p><b>Forgot password?</b></p>
+                            <p>
+                                <span>Don't have an account?</span>
+                                <a href="{{ url_for('signup') }}" class="pointer">Sign up</a>
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome text -->
+    <div class="welcome-text sign-in">Welcome !</div>
+
+    <script>
+        let container = document.getElementById('container');
+
+        setTimeout(() => {
+            container.classList.add('sign-in');
+        }, 200);
+    </script>
+</body>
+</html>
